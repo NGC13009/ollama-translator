@@ -3,6 +3,14 @@
   "name": "Ollama Web Translator",
   "version": "1.0",
   "description": "一个使用ollama进行网页翻译的插件，支持一次请求有限个段落，防止ollama出现超时问题。",
+  "commands": {
+    "toggle-translation": {
+      "suggested_key": {
+        "default": "Alt+A"
+      },
+      "description": "Toggle translation"
+    }
+  },
   "permissions": [
     "storage", // 允许插件使用 chrome.storage API 来保存用户设置
     "activeTab", // 允许插件访问当前活动的标签页

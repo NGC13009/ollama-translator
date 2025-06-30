@@ -2,27 +2,22 @@
 // 有一个内存中的缓存，这样显示原文后不清除翻译结果
 // 但是没有磁盘缓存，刷新了或者关闭页面了就得重开了
 
-// 监听来自 popup 的消息
-
-// 翻译
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "translate") {
-        console.log("Translation process started...");
-        translatePage();
-    }
-});
-
-// 显示原文
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "showOriginal") {
-        console.log("showOriginPage process started...");
-        showOriginPage();
-    }
-});
-
-let showOriginalText = false; // 决定是否显示原始文本
+let showOriginalText = true; // 决定是否显示原始文本
 let tasks = []; // 存储的待翻译任务列表
 let flag_done = true; // 锁：任务完成标志，避免在建立tasks的时候被打断
+
+// 监听来自 popup 的消息切换翻译或者显示原文
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "translate") {
+        showOriginalText = !showOriginalText;
+        console.log(`showOriginalText: ${showOriginalText} .`);
+        if (showOriginalText) {
+            showOriginPage();
+        } else {
+            translatePage();
+        }
+    }
+});
 
 // 第一次执行一下，之后有tasks了就刷新重置吧，没必要每次翻译都重建
 function createTranslationTasks(elements, translatingColor, tasks) {
