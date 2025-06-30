@@ -12,6 +12,8 @@ function saveOptions() {
     const maxConcurrentRequests = parseInt(document.getElementById('maxConcurrentRequests').value, 6);
     const selectors = document.getElementById('selectors').value || 'p, h1, h2, h3, h4, h5, h6, li, span, a, blockquote';
     const apikey = document.getElementById('apikey').value || 'null';
+    const translatingColor = document.getElementById('translatingColor').value;
+    const translateErrorColor = document.getElementById('translateErrorColor').value;
 
     // 使用 chrome.storage.sync API 保存数据
     // sync 会通过谷歌账户同步，local 只保存在本地
@@ -24,7 +26,9 @@ function saveOptions() {
         userPromptTemplate,
         maxConcurrentRequests,
         selectors,
-        apikey
+        apikey,
+        translatingColor,
+        translateErrorColor,
     }, () => {
         // 保存成功后，向用户显示一个提示
         const status = document.getElementById('status');
@@ -48,6 +52,8 @@ function restoreOptions() {
         maxConcurrentRequests: 6,
         selectors: 'p, h1, h2, h3, h4, h5, h6, li, span, a, blockquote',
         apikey: 'null',
+        translatingColor: 'green',
+        translateErrorColor: 'red',
     };
 
     chrome.storage.sync.get(defaults, (items) => {
@@ -61,6 +67,8 @@ function restoreOptions() {
         document.getElementById('maxConcurrentRequests').value = items.maxConcurrentRequests;
         document.getElementById('selectors').value = items.selectors;
         document.getElementById('apikey').value = items.apikey;
+        document.getElementById('translatingColor').value = items.translatingColor;
+        document.getElementById('translateErrorColor').value = items.translateErrorColor;
     });
 }
 

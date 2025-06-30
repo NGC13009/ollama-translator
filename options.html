@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Ollama Translator 设置</title>
+    <title>Ollama Web Translator 设置</title>
     <meta charset="UTF-8">
     <style>
         body {
@@ -57,12 +57,12 @@
     </div>
     <div>
         <label for="systemPrompt">系统提示词：</label>
-        <small>参考我们的默认系统提示词，一般这个无需更改。注意，对于qwen3思考类模型务必添加一个 /nothink 在最后，否则模型会陷入沉思，翻译的超级慢。</small>
+        <small>参考我们的默认系统提示词，一般这个无需更改。注意，对于qwen3思考类模型务必添加一个 /nothink 在最后，否则模型会陷入沉思，翻译的超级慢。使用 {{{title}}} 作为页面标题占位符。（可以不要，但是这个东西可能有助于大模型翻译质量）翻译时，当前上下文会替换这个东西。</small>
         <textarea id="systemPrompt"></textarea>
     </div>
     <div>
         <label for="userPromptTemplate">用户提示词模板：</label>
-        <small>使用 {{{text}}} 作为待翻译段落的占位符（必须有，不然翻译什么？），{{{title}}} 作为页面标题占位符（可以不要，但是这个东西可能有助于大模型翻译质量）。翻译时，当前上下文会替换这个东西。</small>
+        <small>使用 {{{text}}} 作为待翻译段落的占位符（必须有，不然翻译什么？），{{{title}}} 作为页面标题占位符。</small>
         <textarea id="userPromptTemplate"></textarea>
     </div>
     <div>
@@ -79,6 +79,16 @@
         <label for="maxConcurrentRequests">最大同一时刻并发请求数：</label>
         <small>同一时刻，向ollama发送的请求数目不会超过这个值。会滚动请求翻译内容，而非一次全发送过去。ollama一次翻译不了太多（谁家有8卡B200服务器啊！）。因此，一次请求的数目不会超过这个值，以避免队列太长导致的响应超时。这个根据自己的配置设置一个合适大小即可。</small>
         <input type="number" id="maxConcurrentRequests" value="4">
+    </div>
+    <div>
+        <label for="translatingColor">翻译进行中文本的颜色：</label>
+        <small>用于标识当前翻译正在进行中的颜色。</small>
+        <input type="color" id="translatingColor" value="green">
+    </div>
+    <div>
+        <label for="translateErrorColor">翻译错误颜色：</label>
+        <small>用于标识翻译过程中出现错误的颜色。</small>
+        <input type="color" id="translateErrorColor" value="red">
     </div>
     <button id="save">保存配置</button>
     <div id="status"></div>

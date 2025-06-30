@@ -60,6 +60,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     clearTimeout(timeoutId);
                     if (!response.ok) {
                         // 尝试读取错误响应体
+                        alert(`HTTP error! Status: ${response.status}, Body: ${text}`);
                         return response.text().then(text => {
                             throw new Error(`HTTP error! Status: ${response.status}, Body: ${text}`);
                         });
@@ -71,11 +72,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         const trtext = data.response.replace(/<think>[\s\S]*?<\/think>/, '').trim();  // 删除 <think> 标签及其内容，并移除多余换行符
                         sendResponse({ translatedText: trtext });
                     } else {
-                        throw new Error("Ollama response did not contain a 'response' field.");
+                        alert(`response did not contain a 'response' field.`);
+                        throw new Error("response did not contain a 'response' field.");
                     }
                 })
                 .catch(error => { // 处理错误
                     clearTimeout(timeoutId);
+                    alert(`Error calling Ollama API: ${error}`)
                     console.error('Error calling Ollama API:', error);
                     sendResponse({ error: error.message });
                 });
@@ -87,5 +90,5 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // 在插件安装或更新时，可以打印一条日志
 chrome.runtime.onInstalled.addListener(() => {
-    console.log("Ollama Translator extension installed/updated.");
+    console.log("Ollama Web Translator extension installed/updated.");
 });
