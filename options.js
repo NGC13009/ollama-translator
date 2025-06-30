@@ -1,19 +1,5 @@
 // options.js
 
-document.addEventListener('DOMContentLoaded', () => {  // TODO 暂时没用这个
-    const toggle = document.getElementById('debugToggle');
-
-    // 从存储中读取当前状态
-    chrome.storage.sync.get('debugMode', (result) => {
-        toggle.checked = result.debugMode || false;
-    });
-
-    // 监听复选框变化并保存状态
-    toggle.addEventListener('change', (e) => {
-        chrome.storage.sync.set({ debugMode: e.target.checked });
-    });
-});
-
 // 保存设置
 function saveOptions() {
     // 从表单获取值
@@ -23,6 +9,9 @@ function saveOptions() {
     const timeout = parseInt(document.getElementById('timeout').value, 10);
     const systemPrompt = document.getElementById('systemPrompt').value;
     const userPromptTemplate = document.getElementById('userPromptTemplate').value;
+    const maxConcurrentRequests = parseInt(document.getElementById('maxConcurrentRequests').value, 6);
+    const selectors = document.getElementById('selectors').value || 'p, h1, h2, h3, h4, h5, h6, li, span, a, blockquote';
+    const apikey = document.getElementById('apikey').value || 'null';
 
     // 使用 chrome.storage.sync API 保存数据
     // sync 会通过谷歌账户同步，local 只保存在本地
@@ -32,7 +21,10 @@ function saveOptions() {
         temperature,
         timeout,
         systemPrompt,
-        userPromptTemplate
+        userPromptTemplate,
+        maxConcurrentRequests,
+        selectors,
+        apikey
     }, () => {
         // 保存成功后，向用户显示一个提示
         const status = document.getElementById('status');
@@ -51,8 +43,11 @@ function restoreOptions() {
         modelName: 'qwen3:14b', // 使用一个常见的模型作为默认值
         temperature: 0.6,
         timeout: 60,
-        systemPrompt: 'You are a professional translator. Translate the user\'s text accurately. IMPORTANT: Do not change the HTML structure, such as links or formatting tags (e.g., <a>, <b>, <i>). Do not alter LaTeX code enclosed in \\[...\\] , \\(...\\), $...$ or $$...$$. Only translate the natural language text. Please do NOT output any other content, such as greetings, summaries, or translation points. Only provide translations of the content./nothink',
-        userPromptTemplate: '将下面的内容翻译到中文:\n\n{{text}}'
+        systemPrompt: 'You are a professional translator. Translate the user\'s text accurately. 当前内容是页面标题为 {{{title}}} 内的文本。IMPORTANT: Do not change the HTML structure, such as links or formatting tags (e.g., <a>, <b>, <i>). Do not alter LaTeX code enclosed in \\[...\\] , \\(...\\), $...$ or $$...$$. Only translate the natural language text. Please do NOT output any other content, such as greetings, summaries, or translation points. Only provide translations of the content. /nothink',
+        userPromptTemplate: '将下面内容翻译到中文:\n\n{{{text}}}',
+        maxConcurrentRequests: 6,
+        selectors: 'p, h1, h2, h3, h4, h5, h6, li, span, a, blockquote',
+        apikey: 'null',
     };
 
     chrome.storage.sync.get(defaults, (items) => {
@@ -63,6 +58,9 @@ function restoreOptions() {
         document.getElementById('timeout').value = items.timeout;
         document.getElementById('systemPrompt').value = items.systemPrompt;
         document.getElementById('userPromptTemplate').value = items.userPromptTemplate;
+        document.getElementById('maxConcurrentRequests').value = items.maxConcurrentRequests;
+        document.getElementById('selectors').value = items.selectors;
+        document.getElementById('apikey').value = items.apikey;
     });
 }
 

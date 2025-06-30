@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Ollama Translator Options</title>
+    <title>Ollama Translator 设置</title>
     <meta charset="UTF-8">
     <style>
         body {
@@ -34,37 +34,53 @@
 </head>
 
 <body>
-    <h1>Ollama Translator Settings</h1>
+    <h1>Ollama 翻译器设置</h1>
     <div>
-        <label for="ollamaUrl">Ollama API URL:</label>
+        <label for="ollamaUrl">Ollama API URL（调用的接口）:</label>
+        <small>请输入 Ollama 服务的 API 地址，例如：http://127.0.0.1:11434. 这个是默认的ollama地址。</small>
         <input type="text" id="ollamaUrl">
     </div>
     <div>
-        <label for="modelName">Model Name:</label>
+        <label for="modelName">模型名称：</label>
+        <small>请输入模型名称，例如：qewn3:14b. （如果使用类似于qwen3的思考可切换模型，务必给系统提示词最后添加一个"/nothink"提示词来关闭模型的思考过程。本插件会自动清除 think 标签）</small>
         <input type="text" id="modelName">
     </div>
     <div>
-        <label for="temperature">Temperature (0.0 - 1.0):</label>
+        <label for="temperature">大模型采样温度系数：</label>
+        <small>采样温度系数，值越大，生成的文本越随机。设置为0则为确定输出，为了获得更好的翻译效果，建议设置到0.6到1左右。太大了模型就开始“你有那么高速运转的机械进入中国”了。</small>
         <input type="number" id="temperature" min="0" max="1" step="0.1">
     </div>
     <div>
-        <label for="timeout">Timeout (seconds):</label>
+        <label for="timeout">超时时间（秒）：</label>
+        <small>由于我们一次发送的内容不会超过设定值，所以你无需把这个值设置的特别大。比如设置个30s，一般就差不多了。ollama挂了也能迅速返回错误信息，而非傻等。</small>
         <input type="number" id="timeout" min="1">
     </div>
     <div>
-        <label for="systemPrompt">System Prompt:</label>
+        <label for="systemPrompt">系统提示词：</label>
+        <small>参考我们的默认系统提示词，一般这个无需更改。注意，对于qwen3思考类模型务必添加一个 /nothink 在最后，否则模型会陷入沉思，翻译的超级慢。</small>
         <textarea id="systemPrompt"></textarea>
     </div>
     <div>
-        <label for="userPromptTemplate">User Prompt Template (use {{text}} as placeholder):</label>
+        <label for="userPromptTemplate">用户提示词模板：</label>
+        <small>使用 {{{text}}} 作为待翻译段落的占位符（必须有，不然翻译什么？），{{{title}}} 作为页面标题占位符（可以不要，但是这个东西可能有助于大模型翻译质量）。翻译时，当前上下文会替换这个东西。</small>
         <textarea id="userPromptTemplate"></textarea>
     </div>
     <div>
-        <label style="display: inline-flex; align-items: center; gap: 4px;">
-            <input type="checkbox" id="debugToggle"> 启用调试日志
-        </label>
+        <label for="selectors">选择器：</label>
+        <small>定义要翻译的 HTML 标签，用逗号分隔。</small>
+        <textarea id="selectors"></textarea>
     </div>
-    <button id="save">Save Settings</button>
+    <div>
+        <label for="apikey">apikey：</label>
+        <small>ollama一般随便填。如果是在线服务，请自行填写apikey。</small>
+        <textarea id="apikey"></textarea>
+    </div>
+    <div>
+        <label for="maxConcurrentRequests">最大同一时刻并发请求数：</label>
+        <small>同一时刻，向ollama发送的请求数目不会超过这个值。会滚动请求翻译内容，而非一次全发送过去。ollama一次翻译不了太多（谁家有8卡B200服务器啊！）。因此，一次请求的数目不会超过这个值，以避免队列太长导致的响应超时。这个根据自己的配置设置一个合适大小即可。</small>
+        <input type="number" id="maxConcurrentRequests" value="4">
+    </div>
+    <button id="save">保存配置</button>
     <div id="status"></div>
 
     <script src="options.js"></script>

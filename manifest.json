@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Ollama Web Translator",
   "version": "1.0",
-  "description": "Translate web pages using a local Ollama instance.",
+  "description": "一个使用ollama进行网页翻译的插件，支持一次请求有限个段落，防止ollama出现超时问题。",
   "permissions": [
     "storage", // 允许插件使用 chrome.storage API 来保存用户设置
     "activeTab", // 允许插件访问当前活动的标签页
@@ -10,19 +10,19 @@
     "contextMenus" // (可选) 允许右键菜单触发翻译
   ],
   "host_permissions": [
-    "<all_urls>" // 允许后台脚本向任何URL发起请求。为了安全，最好限制为 "http://localhost:11434/" 或用户指定的URL
+    "<all_urls>" // 允许后台脚本向任何URL发起请求。
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js" // 后台核心脚本
   },
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "popup.html", // 默认的插件弹出窗口
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png"
     }
   },
-  "options_page": "options.html",
+  "options_page": "options.html", // 设置页面
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -33,7 +33,7 @@
       "matches": [
         "<all_urls>"
       ], // 在所有页面上都准备好注入
-      "js": [
+      "js": [ // 全局注入的脚本
         "utils.js",
         "content_script.js"
       ]
