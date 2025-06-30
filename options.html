@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Ollama Translator Options</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 1em;
+            min-width: 400px;
+        }
+
+        div {
+            margin-bottom: 1em;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.2em;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.5em;
+        }
+
+        textarea {
+            min-height: 150px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Ollama Translator Settings</h1>
+    <div>
+        <label for="ollamaUrl">Ollama API URL:</label>
+        <input type="text" id="ollamaUrl">
+    </div>
+    <div>
+        <label for="modelName">Model Name:</label>
+        <input type="text" id="modelName">
+    </div>
+    <div>
+        <label for="temperature">Temperature (0.0 - 1.0):</label>
+        <input type="number" id="temperature" min="0" max="1" step="0.1">
+    </div>
+    <div>
+        <label for="timeout">Timeout (seconds):</label>
+        <input type="number" id="timeout" min="1">
+    </div>
+    <div>
+        <label for="systemPrompt">System Prompt:</label>
+        <textarea id="systemPrompt"></textarea>
+    </div>
+    <div>
+        <label for="userPromptTemplate">User Prompt Template (use {{text}} as placeholder):</label>
+        <textarea id="userPromptTemplate"></textarea>
+    </div>
+    <div>
+        <label style="display: inline-flex; align-items: center; gap: 4px;">
+            <input type="checkbox" id="debugToggle"> 启用调试日志
+        </label>
+    </div>
+    <button id="save">Save Settings</button>
+    <div id="status"></div>
+
+    <script src="options.js"></script>
+</body>
+
+</html>
