@@ -1,6 +1,16 @@
 // background.js
 // 插件后台和ollama之类的通信, 他接收来自网页端传入的翻译文本
 
+// 快捷键
+chrome.commands.onCommand.addListener((command) => {
+    if (command === "toggle-translation") {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            chrome.tabs.sendMessage(tabs[0].id, { action: "translate" });
+        });
+    }
+});
+
+
 // 监听来自 content_script 的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "translateText") {

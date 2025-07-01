@@ -1,19 +1,89 @@
 // options.js
 
+// 设置快捷键
+document.addEventListener('DOMContentLoaded', function () {
+    var shortcutsLink = document.getElementById('go-to-shortcuts');
+    shortcutsLink.addEventListener('click', function (event) {
+        event.preventDefault();
+        let url = 'chrome://extensions/shortcuts';
+        if (navigator.userAgent.includes("Edg/")) {
+            url = 'edge://extensions/shortcuts';
+        }
+        chrome.tabs.create({ url: url });
+    });
+});
+
 // 保存设置
 function saveOptions() {
+    const status = document.getElementById('status');
     // 从表单获取值
     const ollamaUrl = document.getElementById('ollamaUrl').value;
     const modelName = document.getElementById('modelName').value;
     const temperature = parseFloat(document.getElementById('temperature').value);
-    const timeout = parseInt(document.getElementById('timeout').value, 10);
+    const timeout = parseInt(document.getElementById('timeout').value);
     const systemPrompt = document.getElementById('systemPrompt').value;
     const userPromptTemplate = document.getElementById('userPromptTemplate').value;
-    const maxConcurrentRequests = parseInt(document.getElementById('maxConcurrentRequests').value, 6);
+    const maxConcurrentRequests = parseInt(document.getElementById('maxConcurrentRequests').value);
     const selectors = document.getElementById('selectors').value || 'p, h1, h2, h3, h4, h5, h6, li, span, a, blockquote';
     const apikey = document.getElementById('apikey').value || 'null';
-    const translatingColor = document.getElementById('translatingColor').value;
-    const translateErrorColor = document.getElementById('translateErrorColor').value;
+    const translateErrorColor = document.getElementById('translateErrorColor').value || '#aa0000';
+
+    try {
+        // 检查 URL 是否合法
+        if (!new URL(ollamaUrl)) {
+            status.textContent = '错误：ollamaUrl 不合法';
+            status.style.color = '#aa0000';
+            alert('错误：URL 不合法');
+            return;
+        }
+
+        // 检查 userPromptTemplate 是否包含 "{{{text}}}"
+        if (!userPromptTemplate.includes("{{{text}}}")) {
+            status.textContent = '错误：用户提示模板必须包含 "{{{text}}}"';
+            status.style.color = '#aa0000';
+            alert('错误：用户提示模板必须包含 "{{{text}}}"');
+            return;
+        }
+
+        // 检查 systemPrompt 是否包含 "{{{text}}}"
+        if (systemPrompt.includes("{{{text}}}")) {
+            status.textContent = '错误：系统提示模板必须不能包含 "{{{text}}}"，包含此模板是错误的，这个模板应该只能出现在用户提示词模板内。';
+            status.style.color = '#aa0000';
+            alert('错误：系统提示模板必须不能包含 "{{{text}}}"，包含此模板是错误的，这个模板应该只能出现在用户提示词模板内。');
+            return;
+        }
+
+        // 检查 maxConcurrentRequests 是否 > 0
+        if (maxConcurrentRequests <= 0) {
+            status.textContent = '错误：最大并发请求数必须是大于 0 的整数';
+            status.style.color = '#aa0000';
+            alert('错误：最大并发请求数必须是大于 0 的整数');
+            return;
+        }
+
+        // 检查 temperature 是否 >= 0
+        if (temperature < 0) {
+            status.textContent = '错误：大模型采样温度系数必须是大于等于 0 的数字';
+            status.style.color = '#aa0000';
+            alert('错误：temperature 必须是大于等于 0 的数字');
+            return;
+        }
+
+        // 检查 timeout 是否 > 0
+        if (timeout <= 0) {
+            status.textContent = '错误：超时时间必须是大于 0 的整数';
+            status.style.color = '#aa0000';
+            alert('错误：timeout 必须是大于 0 的整数');
+            return;
+        }
+
+        // 通过验证
+    } catch (e) {
+        status.textContent = '错误：验证过程中发生错误，表单存在错误的值，无法使能配置清单。请检查表单中的值并修复问题。';
+        status.style.color = '#aa0000';
+        alert('错误：验证过程中发生错误，表单存在错误的值，无法使能配置清单。请检查表单中的值并修复问题。');
+        return;
+    }
 
     // 使用 chrome.storage.sync API 保存数据
     // sync 会通过谷歌账户同步，local 只保存在本地
@@ -27,15 +97,11 @@ function saveOptions() {
         maxConcurrentRequests,
         selectors,
         apikey,
-        translatingColor,
         translateErrorColor,
     }, () => {
         // 保存成功后，向用户显示一个提示
-        const status = document.getElementById('status');
-        status.textContent = 'Options saved.';
-        setTimeout(() => {
-            status.textContent = '';
-        }, 1500);
+        status.textContent = `配置成功，配置清单已启用并保存。${new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+        status.style.color = '#00aa00';
     });
 }
 
@@ -52,7 +118,6 @@ function restoreOptions() {
         maxConcurrentRequests: 6,
         selectors: 'p, h1, h2, h3, h4, h5, h6, li, span, a, blockquote',
         apikey: 'null',
-        translatingColor: 'green',
         translateErrorColor: 'red',
     };
 
@@ -67,7 +132,6 @@ function restoreOptions() {
         document.getElementById('maxConcurrentRequests').value = items.maxConcurrentRequests;
         document.getElementById('selectors').value = items.selectors;
         document.getElementById('apikey').value = items.apikey;
-        document.getElementById('translatingColor').value = items.translatingColor;
         document.getElementById('translateErrorColor').value = items.translateErrorColor;
     });
 }

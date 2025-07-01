@@ -12,18 +12,22 @@ document.getElementById('optionsButton').addEventListener('click', () => {
     chrome.runtime.openOptionsPage();
 });
 
-// 快捷键
-chrome.commands.onCommand.addListener((command) => {
-    if (command === "toggle-translation") {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, { action: "translate" });
-        });
-    }
-});
-
 // 监听来自页面的消息，更新那一行字的提示
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message.type === "updateStatus") {
         document.getElementById("translatedStatus").textContent = message.text;
     }
+});
+
+// 设置快捷键
+document.addEventListener('DOMContentLoaded', function () {
+    var shortcutsLink = document.getElementById('go-to-shortcuts');
+    shortcutsLink.addEventListener('click', function (event) {
+        event.preventDefault();
+        let url = 'chrome://extensions/shortcuts';
+        if (navigator.userAgent.includes("Edg/")) {
+            url = 'edge://extensions/shortcuts';
+        }
+        chrome.tabs.create({ url: url });
+    });
 });

@@ -1,0 +1,42 @@
+/* 用于实现彩色渐变跑马灯效果 */
+
+.ollama-web-translator-translating-animation {
+    background-image: linear-gradient(to right,
+            #e63946,
+            /* 红色：与白/黑对比度≈4.2/5.2 */
+            #d35400,
+            /* 橙色：与白/黑对比度≈4.1/5.1 */
+            #e6a600,
+            /* 黄色：与白/黑对比度≈2.1/10.2（黄色本身亮度高，此为平衡后最优） */
+            #1e8449,
+            /* 绿色：与白/黑对比度≈4.4/4.7 */
+            #2980b9,
+            /* 蓝色：与白/黑对比度≈4.7/4.4 */
+            #9b59b6,
+            /* 紫色：与白/黑对比度≈4.5/4.6 */
+            #e63946) !important;
+    /* 回到红色，保持循环 */
+
+    background-size: 200% auto !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+    animation: ollama-web-translator-gradient-scroll 5s linear infinite !important;
+}
+
+@keyframes ollama-web-translator-gradient-scroll {
+    0% {
+        background-position: 0% 50%;
+        animation-timing-function: ease-in-out;
+    }
+
+    50% {
+        background-position: 100% 50%;
+        animation-timing-function: ease-in-out;
+    }
+
+    100% {
+        background-position: 0% 50%;
+        animation-timing-function: ease-in-out;
+    }
+}
