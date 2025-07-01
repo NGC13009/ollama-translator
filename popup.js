@@ -31,3 +31,12 @@ document.addEventListener('DOMContentLoaded', function () {
         chrome.tabs.create({ url: url });
     });
 });
+
+// popup打开侧栏的按钮
+document.getElementById('openSidebarBtn').addEventListener('click', () => {
+    chrome.windows.create({
+        url: chrome.runtime.getURL("sidepanel.html"),
+        type: "panel",
+        width: 300
+    });
+});

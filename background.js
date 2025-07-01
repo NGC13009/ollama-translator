@@ -1,6 +1,26 @@
 // background.js
 // 插件后台和ollama之类的通信, 他接收来自网页端传入的翻译文本
 
+// 创建右键菜单
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+        id: "translateSelection",
+        title: "在独立窗口中翻译选中内容",
+        contexts: ["selection"]
+    });
+});
+
+// 监听右键菜单点击
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === "translateSelection" && info.selectionText) {
+        chrome.windows.create({
+            url: chrome.runtime.getURL("sidepanel.html?text=" + encodeURIComponent(info.selectionText)),
+            type: "panel",
+            width: 300
+        });
+    }
+});
+
 // 快捷键
 chrome.commands.onCommand.addListener((command) => {
     if (command === "toggle-translation") {

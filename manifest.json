@@ -15,8 +15,8 @@
     "storage", // 允许插件使用 chrome.storage API 来保存用户设置
     "activeTab", // 允许插件访问当前活动的标签页
     "scripting", // 允许插件在标签页中注入脚本
-    "contextMenus", // (可选) 允许右键菜单触发翻译
-    "windows"
+    "contextMenus", // 允许右键菜单触发翻译
+    "sidePanel" // 允许插件使用 chrome.sidePanel API 来显示侧边栏
   ],
   "host_permissions": [
     "<all_urls>" // 允许后台脚本向任何URL发起请求。
@@ -48,6 +48,17 @@
       ],
       "css": [
         "style.css" // 跑马灯效果
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "sidepanel.html",
+        "icons/icon48.png"
+      ],
+      "matches": [
+        "<all_urls>"
       ]
     }
   ]
