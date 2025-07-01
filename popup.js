@@ -37,6 +37,7 @@ document.getElementById('openSidebarBtn').addEventListener('click', () => {
     chrome.windows.create({
         url: chrome.runtime.getURL("sidepanel.html"),
         type: "panel",
-        width: 300
+        width: 600,
+        height: 800,
     });
 });

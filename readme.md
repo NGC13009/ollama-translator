@@ -112,7 +112,7 @@ fetch(settings.ollamaUrl,  // 调用地址，也许也能兼容openai格式
 【o】配置错误检查
 【o】动画效果
 【o】limitless页面视觉效果
-【】侧栏翻译划定的内容
+【o】侧栏翻译划定的内容
 
 
 

@@ -16,7 +16,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         chrome.windows.create({
             url: chrome.runtime.getURL("sidepanel.html?text=" + encodeURIComponent(info.selectionText)),
             type: "panel",
-            width: 300
+            width: 600,
+            height: 800,
         });
     }
 });
