@@ -42,7 +42,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             modelName: 'qwen3:14b', // 使用一个常见的模型作为默认值
             temperature: 0.6,
             timeout: 60,
-            systemPrompt: 'You are a professional translator. Translate the user\'s text accurately. 当前内容是页面标题为 {{{title}}} 内的文本。IMPORTANT: Do not change the HTML structure, such as links or formatting tags (e.g., <a>, <b>, <i>). Do not alter LaTeX code enclosed in \\[...\\] , \\(...\\), $...$ or $$...$$. Only translate the natural language text. Please do NOT output any other content, such as greetings, summaries, or translation points. Only provide translations of the content. /nothink',
+            systemPrompt: 'You are a professional translator. Translate the user\'s text accurately. 当前内容是页面标题为如下内容的文本：\n\n```\n{{{title}}}\n```\n\n这个标题可能有助于翻译质量，但是请勿将标题信息翻译直接附加到输出中。IMPORTANT: Do not change the HTML structure, such as links or formatting tags (e.g., <a>, <b>, <i>). Do not alter LaTeX code enclosed in \\[...\\] , \\(...\\), $...$ or $$...$$. Only translate the natural language text. Please do NOT output any other content, such as greetings, summaries, or translation points. Only provide translations of the content. 你看见的内容不一定是全貌，可能是上下文中的一个节选短句，请自动根据主题确定翻译结果，以尽可能与未看见的上下文匹配。 /nothink',
             userPromptTemplate: '将下面内容翻译到中文:\n\n{{{text}}}',
             apiKey: 'null'
         };

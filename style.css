@@ -1,4 +1,7 @@
 /* 用于实现彩色渐变跑马灯效果 */
+.ollama-web-translator-translating-novel {
+    color: #00aa00 !important;
+}
 
 .ollama-web-translator-translating-animation {
     background-image: linear-gradient(to right,

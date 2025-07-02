@@ -1,10 +1,20 @@
 // content_script.js
 // 有一个内存中的缓存，这样显示原文后不清除翻译结果
 // 但是没有磁盘缓存，刷新了或者关闭页面了就得重开了
+// 第一次一定是翻译，第一次不能是显示原文
 
 let showOriginalText = true; // 决定是否显示原始文本
 let tasks = []; // 存储的待翻译任务列表
 let flag_done = true; // 锁：任务完成标志，避免在建立tasks的时候被打断
+let translating_color_style = 'ollama-web-translator-translating-animation';
+
+// clearCache
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "clearCache") {
+        tasks = [];
+        chrome.runtime.sendMessage({ type: "clearCacheOK" });
+    }
+});
 
 // 监听来自 popup 的消息切换翻译或者显示原文
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -20,9 +30,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 // 第一次执行一下，之后有tasks了就刷新重置吧，没必要每次翻译都重建
-function createTranslationTasks(elements, tasks) {
+function createTranslationTasks(elements, tasks, textMinLen) {
     if (tasks.length > 6) { // 如果任务列表超过24个，就清空并重新创建
-        tasks.forEach(task => { task.node.parentNode.classList.add('ollama-web-translator-translating-animation'); }); // 添加跑马灯效果
+        tasks.forEach(task => { task.node.parentNode.classList.add(translating_color_style); }); // 添加跑马灯效果
     } else {
         const startTime = performance.now(); // 记录开始时间
         console.log("Creating translation tasks...");
@@ -31,8 +41,8 @@ function createTranslationTasks(elements, tasks) {
             // 使用 el.childNodes 来遍历所有子节点，包括文本节点和元素节点
             Array.from(el.childNodes).forEach(node => {
                 // 只处理文本节点，且内容不为空白
-                if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() !== '') {
-                    node.parentNode.classList.add('ollama-web-translator-translating-animation'); // 添加跑马灯效果
+                if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim().length >= textMinLen) {
+                    node.parentNode.classList.add(translating_color_style); // 添加跑马灯效果
                     node.oldNodeValue = node.nodeValue; // 记录原始文本内容
                     node.translatedValue = '';  // 翻译后内容
                     tasks.push({ element: el, node: node, originalText: node.nodeValue });
@@ -57,6 +67,8 @@ async function translatePage() {
         selectors: 'p, h1, h2, h3, h4, h5, h6, li, span, a, blockquote',
         maxConcurrentRequests: 6,
         translateErrorColor: 'red',
+        translating_color_style: 'ollama-web-translator-translating-animation',
+        textMinLen: 5,
     };
 
     // 使用更健壮的方式获取设置
@@ -65,14 +77,16 @@ async function translatePage() {
         // 1. 定义要翻译的 HTML 标签
         console.log(`Translating elements with: ${settings.selectors}`)
         const elements = document.querySelectorAll(settings.selectors);
+        translating_color_style = settings.translating_color_style;
+        const textMinLen = settings.textMinLen;
 
         // 2.1 创建一个任务队列，我们将所有需要翻译的文本节点和其父元素收集起来
-        tasks = createTranslationTasks(elements, tasks);
+        tasks = createTranslationTasks(elements, tasks, textMinLen);
 
         // 2.2 检查标题是否存在，翻译标题，标题短，就不缓存了，大不了再翻译一次
         const pageTitle = document.title || '';
         flag_done = false;
-        if (document.title !== '') {
+        if (document.title.trim().length >= textMinLen) {
             const originalTitle = document.title;
             // 发起标题翻译请求
             chrome.runtime.sendMessage({ action: "translateText", text: originalTitle }, (response) => {
@@ -118,18 +132,18 @@ async function translatePage() {
                     chrome.runtime.sendMessage({ action: "translateText", text: task.originalText, title: pageTitle }, (response) => {
                         if (response && response.translatedText) {
                             task.node.translatedValue = response.translatedText; // 缓存翻译后的文本到内存中
-                            task.node.parentNode.classList.remove('ollama-web-translator-translating-animation'); // 恢复样式
+                            task.node.parentNode.classList.remove(translating_color_style); // 恢复样式
                             if (!showOriginalText) { // 如果翻译完成后切换为了原文模式，那么就不要替换了，缓存就行了
                                 task.node.nodeValue = response.translatedText;
                             }
                         } else if (response && response.error) {
                             task.node.parentNode.style.color = settings.translateErrorColor; // 失败时，设置错误颜色
-                            task.node.parentNode.classList.remove('ollama-web-translator-translating-animation');
+                            task.node.parentNode.classList.remove(translating_color_style);
                             console.error(`Translation failed for: "${task.originalText.substring(0, 50)}...". Error: ${response.error}`);
                         } else {
                             // 失败时，设置错误颜色
                             task.node.parentNode.style.color = settings.translateErrorColor;
-                            task.node.parentNode.classList.remove('ollama-web-translator-translating-animation');
+                            task.node.parentNode.classList.remove(translating_color_style);
                             console.error(`Translation failed for: "${task.originalText.substring(0, 50)}...".`);
                         }
 
@@ -139,7 +153,7 @@ async function translatePage() {
                 }
                 else { // 如果已经翻译过，直接使用旧值在内存中的的缓存
                     task.node.nodeValue = task.node.translatedValue;
-                    task.node.parentNode.classList.remove('ollama-web-translator-translating-animation');
+                    task.node.parentNode.classList.remove(translating_color_style);
                     activeRequests--;
                     // 此处不必继续调用自己，因为火种给异步回调留着就行，这里要么满足循环条件继续了，要么就直接结束循环，输出翻译完毕。
                 }
@@ -173,7 +187,7 @@ async function showOriginPage() {
         taskIndex++;
         chrome.runtime.sendMessage({ type: "updateStatus", text: `恢复原文: ${taskIndex} / ${tasks.length}` });
         console.log(`restore origin page: ${taskIndex} / ${tasks.length} `)
-        task.node.parentNode.classList.remove('ollama-web-translator-translating-animation');
+        task.node.parentNode.classList.remove(translating_color_style);
         task.node.nodeValue = task.node.oldNodeValue;
     }
     const endTime = performance.now(); // 记录结束时间

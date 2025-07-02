@@ -24,9 +24,11 @@ function saveOptions() {
     const systemPrompt = document.getElementById('systemPrompt').value;
     const userPromptTemplate = document.getElementById('userPromptTemplate').value;
     const maxConcurrentRequests = parseInt(document.getElementById('maxConcurrentRequests').value);
+    const minTranslatingLen = parseInt(document.getElementById('minTranslatingLen').value);
     const selectors = document.getElementById('selectors').value || 'p, h1, h2, h3, h4, h5, h6, li, span, a, blockquote';
     const apikey = document.getElementById('apikey').value || 'null';
     const translateErrorColor = document.getElementById('translateErrorColor').value || '#aa0000';
+    const translating_color_style = document.getElementById("translateAnimation").value || 'ollama-web-translator-translating-animation';
 
     try {
         // 检查 URL 是否合法
@@ -58,6 +60,13 @@ function saveOptions() {
             status.textContent = '错误：最大并发请求数必须是大于 0 的整数';
             status.style.color = '#aa0000';
             alert('错误：最大并发请求数必须是大于 0 的整数');
+            return;
+        }
+        // 检查 minTranslatingLen 是否 > 0
+        if (minTranslatingLen <= 0) {
+            status.textContent = '错误：最小翻译长度必须是大于 0 的整数';
+            status.style.color = '#aa0000';
+            alert('错误：最小翻译长度必须是大于 0 的整数');
             return;
         }
 
@@ -98,6 +107,8 @@ function saveOptions() {
         selectors,
         apikey,
         translateErrorColor,
+        translating_color_style,
+        minTranslatingLen,
     }, () => {
         // 保存成功后，向用户显示一个提示
         status.textContent = `配置成功，配置清单已启用并保存。${new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
@@ -113,12 +124,14 @@ function restoreOptions() {
         modelName: 'qwen3:14b', // 使用一个常见的模型作为默认值
         temperature: 0.6,
         timeout: 60,
-        systemPrompt: 'You are a professional translator. Translate the user\'s text accurately. 当前内容是页面标题为 {{{title}}} 内的文本。IMPORTANT: Do not change the HTML structure, such as links or formatting tags (e.g., <a>, <b>, <i>). Do not alter LaTeX code enclosed in \\[...\\] , \\(...\\), $...$ or $$...$$. Only translate the natural language text. Please do NOT output any other content, such as greetings, summaries, or translation points. Only provide translations of the content. /nothink',
+        systemPrompt: 'You are a professional translator. Translate the user\'s text accurately. 当前内容是页面标题为如下内容的文本：\n\n```\n{{{title}}}\n```\n\n这个标题可能有助于翻译质量，但是请勿将标题信息翻译直接附加到输出中。IMPORTANT: Do not change the HTML structure, such as links or formatting tags (e.g., <a>, <b>, <i>). Do not alter LaTeX code enclosed in \\[...\\] , \\(...\\), $...$ or $$...$$. Only translate the natural language text. Please do NOT output any other content, such as greetings, summaries, or translation points. Only provide translations of the content. 你看见的内容不一定是全貌，可能是上下文中的一个节选短句，请自动根据主题确定翻译结果，以尽可能与未看见的上下文匹配。 /nothink',
         userPromptTemplate: '将下面内容翻译到中文:\n\n{{{text}}}',
         maxConcurrentRequests: 6,
         selectors: 'p, h1, h2, h3, h4, h5, h6, li, span, a, blockquote',
         apikey: 'null',
         translateErrorColor: 'red',
+        translating_color_style: 'ollama-web-translator-translating-animation',
+        minTranslatingLen: 5,
     };
 
     chrome.storage.sync.get(defaults, (items) => {
@@ -130,9 +143,11 @@ function restoreOptions() {
         document.getElementById('systemPrompt').value = items.systemPrompt;
         document.getElementById('userPromptTemplate').value = items.userPromptTemplate;
         document.getElementById('maxConcurrentRequests').value = items.maxConcurrentRequests;
+        document.getElementById('minTranslatingLen').value = items.minTranslatingLen;
         document.getElementById('selectors').value = items.selectors;
         document.getElementById('apikey').value = items.apikey;
         document.getElementById('translateErrorColor').value = items.translateErrorColor;
+        document.getElementById("translateAnimation").value = items.translating_color_style;
     });
 }
 

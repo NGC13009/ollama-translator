@@ -41,3 +41,22 @@ document.getElementById('openSidebarBtn').addEventListener('click', () => {
         height: 800,
     });
 });
+
+// clearCacheBtn
+document.getElementById('clearCacheBtn').addEventListener('click', () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.tabs.sendMessage(tabs[0].id, { action: "clearCache" });
+    });
+});
+
+// clearCacheBtn更新提示
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+    if (message.type === "clearCacheOK") {
+        document.getElementById("clearCacheBtn").textContent = '清除缓存成功！';
+        document.getElementById("clearCacheBtn").classList.add('qingkong-success');
+        setTimeout(() => {
+            document.getElementById("clearCacheBtn").textContent = '清除页面缓存';
+            document.getElementById("clearCacheBtn").classList.remove('qingkong-success');
+        }, 1000);
+    }
+});

@@ -219,9 +219,27 @@
             <input type="number" id="maxConcurrentRequests" value="4">
         </div>
         <div>
+            <label for="minTranslatingLen">最小翻译字符长度：</label>
+            <ul>
+                <li>小于这个长度的内容将会被跳过。</li>
+            </ul>
+            <input type="number" id="minTranslatingLen" value="5">
+        </div>
+        <div>
             <label for="translateErrorColor">翻译错误颜色：<input type="color" id="translateErrorColor" value="#aa0000" style="width: 50px; height: 35px;"></label>
             <ul>
                 <li>用于标识翻译过程中出现错误的颜色。</li>
+            </ul>
+        </div>
+        <div>
+            <label for="translateAnimation">翻译中的字符视觉效果：<select id="translateAnimation">
+                    <option value="ollama-web-translator-translating-animation">跑马灯动画</option>
+                    <option value="ollama-web-translator-translating-novel">静态绿色</option>
+                </select></label>
+            <ul>
+                <li>用于选择翻译过程中显示的动画效果。</li>
+                <li>静态绿色更加节省显卡算力，如果ollama和你的显示器使用同一张显卡，那么动画可能会导致ollama执行大模型推理的速度变慢。</li>
+                <li>当翻译的文本控件过多的时候，每个文本控件都会生成一个跑马灯效果，这可能会导致页面加载速度变慢甚至卡死整个系统！因此，当你卡顿的时候，请立刻切换到静态绿色模式。</li>
             </ul>
         </div>
         <hr>
