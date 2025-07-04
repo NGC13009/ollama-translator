@@ -113,6 +113,9 @@ function saveOptions() {
         // 保存成功后，向用户显示一个提示
         status.textContent = `配置成功，配置清单已启用并保存。${new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
         status.style.color = '#00aa00';
+        setTimeout(() => {
+            status.style.color = '#1e1e1e';
+        }, 3000);
     });
 }
 
