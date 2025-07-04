@@ -23,12 +23,15 @@ function saveOptions() {
     const timeout = parseInt(document.getElementById('timeout').value);
     const systemPrompt = document.getElementById('systemPrompt').value;
     const userPromptTemplate = document.getElementById('userPromptTemplate').value;
+    const userPromptTemplateContext = document.getElementById('userPromptTemplateContext').value;
     const maxConcurrentRequests = parseInt(document.getElementById('maxConcurrentRequests').value);
     const minTranslatingLen = parseInt(document.getElementById('minTranslatingLen').value);
     const selectors = document.getElementById('selectors').value || 'p, h1, h2, h3, h4, h5, h6, li, span, a, blockquote';
     const apikey = document.getElementById('apikey').value || 'null';
     const translateErrorColor = document.getElementById('translateErrorColor').value || '#aa0000';
     const translating_color_style = document.getElementById("translateAnimation").value || 'ollama-web-translator-translating-animation';
+    const needAddContext = parseInt(document.getElementById('needAddContext').value) || 35;
+    const AddContextMaxNum = parseInt(document.getElementById('AddContextMaxNum').value) || 5;
 
     try {
         // 检查 URL 是否合法
@@ -44,6 +47,21 @@ function saveOptions() {
             status.textContent = '错误：用户提示模板必须包含 "{{{text}}}"';
             status.style.color = '#aa0000';
             alert('错误：用户提示模板必须包含 "{{{text}}}"');
+            return;
+        }
+
+        // 检查 userPromptTemplateContext 是否包含 "{{{text}}} 和 {{{context}}}"
+        if (!userPromptTemplateContext.includes("{{{text}}}")) {
+            status.textContent = '错误：带有上下文的用户提示模板必须包含 "{{{text}}}"';
+            status.style.color = '#aa0000';
+            alert('错误：带有上下文的用户提示模板必须包含 "{{{text}}}"');
+            return;
+        }
+
+        if (!userPromptTemplateContext.includes("{{{context}}}")) {
+            status.textContent = '错误：带有上下文的用户提示模板必须包含 "{{{context}}}"';
+            status.style.color = '#aa0000';
+            alert('错误：带有上下文的用户提示模板必须包含 "{{{context}}}"');
             return;
         }
 
@@ -103,16 +121,22 @@ function saveOptions() {
         timeout,
         systemPrompt,
         userPromptTemplate,
+        userPromptTemplateContext,
         maxConcurrentRequests,
         selectors,
         apikey,
         translateErrorColor,
         translating_color_style,
         minTranslatingLen,
+        AddContextMaxNum,
+        needAddContext,
     }, () => {
         // 保存成功后，向用户显示一个提示
         status.textContent = `配置成功，配置清单已启用并保存。${new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
         status.style.color = '#00aa00';
+        setTimeout(() => {
+            status.style.color = '#1e1e1e';
+        }, 3000);
     });
 }
 
@@ -126,12 +150,15 @@ function restoreOptions() {
         timeout: 60,
         systemPrompt: 'You are a professional translator. Translate the user\'s text accurately. 当前内容是页面标题为如下内容的文本：\n\n```\n{{{title}}}\n```\n\n这个标题可能有助于翻译质量，但是请勿将标题信息翻译直接附加到输出中。IMPORTANT: Do not change the HTML structure, such as links or formatting tags (e.g., <a>, <b>, <i>). Do not alter LaTeX code enclosed in \\[...\\] , \\(...\\), $...$ or $$...$$. Only translate the natural language text. Please do NOT output any other content, such as greetings, summaries, or translation points. Only provide translations of the content. 你看见的内容不一定是全貌，可能是上下文中的一个节选短句，请自动根据主题确定翻译结果，以尽可能与未看见的上下文匹配。 /nothink',
         userPromptTemplate: '将下面内容翻译到中文:\n\n{{{text}}}',
+        userPromptTemplateContext: '现在有一个段落，你需要根据上下文信息来猜测含义，并更加准确的翻译指定的内容。你只需要翻译指定的字样，上下文仅供参考，不一定和翻译内容相关。上下文中的符号，公式可能已经被删除。\n\n上下文：\n\n{{{context}}}\n\n要翻译的字样：\n\n{{{text}}}',
         maxConcurrentRequests: 6,
         selectors: 'p, h1, h2, h3, h4, h5, h6, li, span, a, blockquote',
         apikey: 'null',
         translateErrorColor: 'red',
         translating_color_style: 'ollama-web-translator-translating-animation',
         minTranslatingLen: 5,
+        AddContextMaxNum: 5,
+        needAddContext: 35,
     };
 
     chrome.storage.sync.get(defaults, (items) => {
@@ -142,12 +169,15 @@ function restoreOptions() {
         document.getElementById('timeout').value = items.timeout;
         document.getElementById('systemPrompt').value = items.systemPrompt;
         document.getElementById('userPromptTemplate').value = items.userPromptTemplate;
+        document.getElementById('userPromptTemplateContext').value = items.userPromptTemplateContext;
         document.getElementById('maxConcurrentRequests').value = items.maxConcurrentRequests;
         document.getElementById('minTranslatingLen').value = items.minTranslatingLen;
         document.getElementById('selectors').value = items.selectors;
         document.getElementById('apikey').value = items.apikey;
         document.getElementById('translateErrorColor').value = items.translateErrorColor;
         document.getElementById("translateAnimation").value = items.translating_color_style;
+        document.getElementById('AddContextMaxNum').value = items.AddContextMaxNum;
+        document.getElementById("needAddContext").value = items.needAddContext;
     });
 }
 

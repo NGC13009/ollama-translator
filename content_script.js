@@ -69,6 +69,8 @@ async function translatePage() {
         translateErrorColor: 'red',
         translating_color_style: 'ollama-web-translator-translating-animation',
         textMinLen: 5,
+        needAddContext: 35,
+        AddContextMaxNum: 5,
     };
 
     // 使用更健壮的方式获取设置
@@ -79,6 +81,8 @@ async function translatePage() {
         const elements = document.querySelectorAll(settings.selectors);
         translating_color_style = settings.translating_color_style;
         const textMinLen = settings.textMinLen;
+        const n = settings.needAddContext;
+        const m = settings.AddContextMaxNum;
 
         // 2.1 创建一个任务队列，我们将所有需要翻译的文本节点和其父元素收集起来
         tasks = createTranslationTasks(elements, tasks, textMinLen);
@@ -124,12 +128,14 @@ async function translatePage() {
                 const task = tasks[taskIndex];
                 taskIndex++;  // 下一轮用的
                 activeRequests++;
-                chrome.runtime.sendMessage({ type: "updateStatus", text: `正在翻译: ${taskIndex} / ${tasks.length}` });
-                console.log(`Translating: ${taskIndex} / ${tasks.length} `)
+                chrome.runtime.sendMessage({ type: "updateStatus", text: `正在翻译: ${taskIndex} / ${tasks.length}<br>内容: ${task.originalText.substring(0, 10)}...` });
 
                 // 发起翻译请求
                 if (task.node.translatedValue === '') { // 没翻译则翻译
-                    chrome.runtime.sendMessage({ action: "translateText", text: task.originalText, title: pageTitle }, (response) => {
+
+                    let context_list = [];
+                    context_list = getContextList(tasks, taskIndex - 1, n, m); // 获取上下文列表，只有文本很短的时候才会获取
+                    chrome.runtime.sendMessage({ action: "translateText", text: task.originalText, context: context_list, title: pageTitle }, (response) => {
                         if (response && response.translatedText) {
                             task.node.translatedValue = response.translatedText; // 缓存翻译后的文本到内存中
                             task.node.parentNode.classList.remove(translating_color_style); // 恢复样式
@@ -139,7 +145,7 @@ async function translatePage() {
                         } else if (response && response.error) {
                             task.node.parentNode.style.color = settings.translateErrorColor; // 失败时，设置错误颜色
                             task.node.parentNode.classList.remove(translating_color_style);
-                            console.error(`Translation failed for: "${task.originalText.substring(0, 50)}...". Error: ${response.error}`);
+                            console.error(`Translation failed for: "${task.originalText.substring(0, 50)}...".Error: ${response.error} `);
                         } else {
                             // 失败时，设置错误颜色
                             task.node.parentNode.style.color = settings.translateErrorColor;
@@ -160,7 +166,7 @@ async function translatePage() {
             }
 
             if (taskIndex >= tasks.length && activeRequests === 0) {
-                console.log(`All translation tasks finished. totla = ${tasks.length}`);
+                console.log(`All translation tasks finished.totla = ${tasks.length} `);
                 chrome.runtime.sendMessage({ type: "updateStatus", text: `翻译完毕。总共 ${tasks.length} 个段落完成。` });
             }
         }
@@ -177,6 +183,7 @@ async function showOriginPage() {
     let cnt = 1;
     while (!flag_done) {
         console.log(`需要等待flag_done锁释放，才能进行。当前等待了 ${cnt} 秒。`);
+        chrome.runtime.sendMessage({ type: "updateStatus", text: `需要等待flag_done锁释放，才能进行。当前等待了 ${cnt} 秒。好久都没恢复那应该是程序寄了，建议反馈给开发者。` });
         await new Promise(resolve => setTimeout(resolve, 1000));
         cnt++;
     }
@@ -186,10 +193,37 @@ async function showOriginPage() {
         const task = tasks[taskIndex];
         taskIndex++;
         chrome.runtime.sendMessage({ type: "updateStatus", text: `恢复原文: ${taskIndex} / ${tasks.length}` });
-        console.log(`restore origin page: ${taskIndex} / ${tasks.length} `)
         task.node.parentNode.classList.remove(translating_color_style);
         task.node.nodeValue = task.node.oldNodeValue;
     }
     const endTime = performance.now(); // 记录结束时间
     console.log(`show original text completed. time: ${endTime - startTime} ms`);
+    chrome.runtime.sendMessage({ type: "updateStatus", text: `恢复原文完成，耗时 ${endTime - startTime} ms` });
+}
+
+
+
+// 给短句补上下文
+function getContextList(tasks, taskIndex, n, maxSteps) {
+    const contextList = [];
+    const currentText = tasks[taskIndex].originalText;
+    if (currentText.length >= n) {
+        return contextList;
+    }
+
+    let steps = 1;
+    function getTaskText(index) {
+        return tasks[index]?.originalText || "";
+    }
+
+    contextList.push(tasks[taskIndex].originalText);
+
+    // 添加上下文任务
+    while (steps < maxSteps) {
+        contextList.unshift(getTaskText(taskIndex - steps));
+        contextList.push(getTaskText(taskIndex + steps));
+        steps++;
+    }
+
+    return contextList;
 }

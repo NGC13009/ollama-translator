@@ -44,6 +44,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             timeout: 60,
             systemPrompt: 'You are a professional translator. Translate the user\'s text accurately. 当前内容是页面标题为如下内容的文本：\n\n```\n{{{title}}}\n```\n\n这个标题可能有助于翻译质量，但是请勿将标题信息翻译直接附加到输出中。IMPORTANT: Do not change the HTML structure, such as links or formatting tags (e.g., <a>, <b>, <i>). Do not alter LaTeX code enclosed in \\[...\\] , \\(...\\), $...$ or $$...$$. Only translate the natural language text. Please do NOT output any other content, such as greetings, summaries, or translation points. Only provide translations of the content. 你看见的内容不一定是全貌，可能是上下文中的一个节选短句，请自动根据主题确定翻译结果，以尽可能与未看见的上下文匹配。 /nothink',
             userPromptTemplate: '将下面内容翻译到中文:\n\n{{{text}}}',
+            userPromptTemplateContext: '现在有一个段落，你需要根据上下文信息来猜测含义，并更加准确的翻译指定的内容。你只需要翻译指定的字样，上下文仅供参考，不一定和翻译内容相关。上下文中的符号，公式可能已经被删除。\n\n上下文：\n\n{{{context}}}\n\n要翻译的字样：\n\n{{{text}}}',
             apiKey: 'null'
         };
 
@@ -59,7 +60,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             }
 
             // 构建完整的用户 Prompt
-            const userPrompt = settings.userPromptTemplate.replace(/{{{text}}}/, request.text).replace(/{{{title}}}/, request.title);
+            let userPrompt;
+            const reqn = request.context?.length || 0;
+            if (reqn == 0) {
+                userPrompt = settings.userPromptTemplate.replace(/{{{text}}}/, request.text).replace(/{{{title}}}/, request.title);
+            } else {
+                userPrompt = settings.userPromptTemplateContext.replace(/{{{text}}}/, request.text).replace(/{{{title}}}/, request.title).replace(/{{{context}}}/, request.context.join(''));
+            }
+
             const systemPrompt = settings.systemPrompt.replace(/{{{title}}}/, request.title);
 
             // 构建请求体

@@ -9,6 +9,7 @@
             margin: 20px;
             background-color: #efefef;
             font-size: 20px;
+            color: #1e1e1e;
         }
 
         p,
@@ -196,6 +197,32 @@
                 <li>使用 <code>{{{text}}}</code> 作为待翻译段落的占位符（必须有，不然翻译什么？），<code>{{{title}}}</code> 作为页面标题占位符。</li>
             </ul>
             <textarea id="userPromptTemplate"></textarea>
+        </div>
+        <div>
+            <label for="needAddContext">需要补全上下文的字符门限：</label>
+            <ul>
+                <li>需要翻译的内容如果字符数不达到这么长，那么模型翻译的时候使用带有上下文的prompt，这样可以避免模型在翻译过程中丢失上下文从而导致质量过差。</li>
+                <li>会尝试补充当前字符串两侧的上下文，直到达到这个设定值或超出最大上下文补充段落数（补充一次左侧+右侧为一轮）。</li>
+                <li>例如，<code>{补充一次左边} {待翻译内容} {补充一次右边}</code>是一轮补充上下文。</li>
+                <li>小于等于0则相当于不补全上下文。</li>
+            </ul>
+            <input type="number" id="needAddContext" value="35">
+        </div>
+        <div>
+            <label for="AddContextMaxNum">最大上下文补充段落：</label>
+            <ul>
+                <li>补全上下文的轮次不会超过这个值。避免疯狂补充。</li>
+                <li>小于等于0则相当于不补全上下文。</li>
+            </ul>
+            <input type="number" id="AddContextMaxNum" value="5">
+        </div>
+        <div>
+            <label for="userPromptTemplateContext">带有上下文的用户提示词模板：</label>
+            <ul>
+                <li>使用 <code>{{{text}}}</code> 作为待翻译段落的占位符（必须有，不然翻译什么？），<code>{{{title}}}</code> 作为页面标题占位符。</li>
+                <li>因为模型传入的是上下文，所以prompt必须告诉模型要翻译哪个内容。使用 <code>{{{context}}}</code>表示上下文占位符。</li>
+            </ul>
+            <textarea id="userPromptTemplateContext"></textarea>
         </div>
         <div>
             <label for="selectors">选择器列表：</label>
