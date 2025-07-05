@@ -29,6 +29,7 @@ function saveOptions() {
     const apikey = document.getElementById('apikey').value || 'null';
     const translateErrorColor = document.getElementById('translateErrorColor').value || '#aa0000';
     const translating_color_style = document.getElementById("translateAnimation").value || 'ollama-web-translator-translating-animation';
+    const translateHTMLMaxLength = parseInt(document.getElementById('translateHTMLMaxLength').value) || 15;
 
     try {
         // 检查 URL 是否合法
@@ -109,6 +110,7 @@ function saveOptions() {
         translateErrorColor,
         translating_color_style,
         minTranslatingLen,
+        translateHTMLMaxLength,
     }, () => {
         // 保存成功后，向用户显示一个提示
         status.textContent = `配置成功，配置清单已启用并保存。${new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
@@ -135,6 +137,7 @@ function restoreOptions() {
         translateErrorColor: 'red',
         translating_color_style: 'ollama-web-translator-translating-animation',
         minTranslatingLen: 5,
+        translateHTMLMaxLength: 15,
     };
 
     chrome.storage.sync.get(defaults, (items) => {
@@ -151,6 +154,7 @@ function restoreOptions() {
         document.getElementById('apikey').value = items.apikey;
         document.getElementById('translateErrorColor').value = items.translateErrorColor;
         document.getElementById("translateAnimation").value = items.translating_color_style;
+        document.getElementById("translateHTMLMaxLength").value = items.translateHTMLMaxLength;
     });
 }
 

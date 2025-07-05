@@ -227,6 +227,13 @@
             <input type="number" id="minTranslatingLen" value="5">
         </div>
         <div>
+            <label for="translateHTMLMaxLength">直接按html翻译的最小字符数：</label>
+            <ul>
+                <li>小于这个值将直接送入LLM而非拆分</li>
+            </ul>
+            <input type="number" id="translateHTMLMaxLength" value="15">
+        </div>
+        <div>
             <label for="translateErrorColor">翻译错误颜色：<input type="color" id="translateErrorColor" value="#aa0000" style="width: 50px; height: 35px;"></label>
             <ul>
                 <li>用于标识翻译过程中出现错误的颜色。</li>
